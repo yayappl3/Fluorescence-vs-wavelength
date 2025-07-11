@@ -1,0 +1,69 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import glob
+
+file_paths = [
+# data without analyte
+               '/content/drive/MyDrive/Landry lab/20250708/practice 2025-07-08 15_06_32 01.csv',
+               '/content/drive/MyDrive/Landry lab/20250708/practice 2025-07-08 15_06_34 02.csv',
+               '/content/drive/MyDrive/Landry lab/20250708/practice 2025-07-08 15_06_35 03.csv',
+# data with analyte
+               '/content/drive/MyDrive/Landry lab/20250708/practicewithDA 2025-07-08 15_17_08 01.csv',
+               '/content/drive/MyDrive/Landry lab/20250708/practicewithDA 2025-07-08 15_17_10 02.csv',
+               '/content/drive/MyDrive/Landry lab/20250708/practicewithDA 2025-07-08 15_17_11 03.csv',
+]
+
+# Define figure name and which folder to save figures in
+folder_path = "/content/drive/MyDrive/Landry lab/20250708"
+
+# Load all CSVs into a list of DataFrames
+dfs = [pd.read_csv(f, header=None, names=['Wavelength', 'Fluorescence']) for f in file_paths]
+
+# Split into two groups
+AnalyteFalse = dfs[:3]
+AnalyteTrue = dfs[3:]
+
+# Stack fluorescence values (assuming same set of wavelengths in all files), aka congregate fluorescence values into its own array
+wavelengths = AnalyteFalse[0]['Wavelength']  # assuming same for all
+AnalyteFalse_fluo = np.stack([df['Fluorescence'].values for df in AnalyteFalse])
+AnalyteTrue_fluo = np.stack([df['Fluorescence'].values for df in AnalyteTrue])
+
+# Compute mean and std dev (axis=0 -> for rows)
+AnalyteFalse_mean = AnalyteFalse_fluo.mean(axis=0)
+AnalyteFalse_std = AnalyteFalse_fluo.std(axis=0)
+
+AnalyteTrue_mean = AnalyteTrue_fluo.mean(axis=0)
+AnalyteTrue_std = AnalyteTrue_fluo.std(axis=0)
+
+# Compute area under the mean fluorescence curves (integrals)
+AnalyteTrue_integral = np.trapezoid(AnalyteTrue_mean, wavelengths)
+AnalyteFalse_integral = np.trapezoid(AnalyteFalse_mean, wavelengths)
+
+print(AnalyteFalse_integral)
+print(AnalyteTrue_integral)
+
+# Calculate fluorescence change
+deltaF = (AnalyteTrue_integral - AnalyteFalse_integral)/(AnalyteFalse_integral)
+
+# plot
+
+plt.figure(figsize=(10, 6))
+
+plt.plot(wavelengths, AnalyteFalse_mean, label='$F_0$', color='blue')
+plt.fill_between(wavelengths, AnalyteFalse_mean - AnalyteFalse_std, AnalyteFalse_mean + AnalyteFalse_std, color='blue', alpha=0.3, label='StdDev')
+
+plt.plot(wavelengths, AnalyteTrue_mean, label='$F$', color='red')
+plt.fill_between(wavelengths, AnalyteTrue_mean - AnalyteTrue_std, AnalyteTrue_mean + AnalyteTrue_std, color='red', alpha=0.3, label='StdDev')
+
+# faux plot to show deltaF value in legend
+plt.plot(wavelengths, AnalyteFalse_mean, color='none', label=f'$\Delta F / F_0$ = {deltaF:.4f}')
+
+       
+
+plt.xlabel('Wavelength (nm)')
+plt.ylabel('Fluorescence (a.u.)')
+plt.title('Fluorescence Spectra')
+plt.legend()
+plt.tight_layout()
+plt.show()
