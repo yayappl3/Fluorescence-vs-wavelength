@@ -76,9 +76,10 @@ plt.ylabel('Fluorescence (a.u.)')
 plt.title('Fluorescence Spectra')
 plt.legend()
 plt.tight_layout()
-plt.show()
 
 # save plot in file
 figure_name = "Name of plot" 
 figure_path = os.path.join(folder_path, figure_name)
 plt.savefig(figure_path)
+
+plt.show()
