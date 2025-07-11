@@ -1,21 +1,31 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import glob
 
+# paste the paths of the csv files
 file_paths = [
-# data without analyte
-               '/content/drive/MyDrive/Landry lab/20250708/practice 2025-07-08 15_06_32 01.csv',
-               '/content/drive/MyDrive/Landry lab/20250708/practice 2025-07-08 15_06_34 02.csv',
-               '/content/drive/MyDrive/Landry lab/20250708/practice 2025-07-08 15_06_35 03.csv',
+# data without analyte 
+               'Run 1.csv',
+               'Run 2.csv',
+               'Run 3.csv',
 # data with analyte
-               '/content/drive/MyDrive/Landry lab/20250708/practicewithDA 2025-07-08 15_17_08 01.csv',
-               '/content/drive/MyDrive/Landry lab/20250708/practicewithDA 2025-07-08 15_17_10 02.csv',
-               '/content/drive/MyDrive/Landry lab/20250708/practicewithDA 2025-07-08 15_17_11 03.csv',
+               'Run 1.csv',
+               'Run 2.csv',
+               'Run 3.csv',
 ]
 
-# Define figure name and which folder to save figures in
-folder_path = "/content/drive/MyDrive/Landry lab/20250708"
+# Define figure name and which folder to save figure in
+folder_path = "desired folder path"
+
+
+# List to store file names without extensions
+file_names = []
+
+for file_path in file_paths:
+    # Extract the file name without extension and append to the list
+    file_names.append(os.path.splitext(os.path.basename(file_path))[0])
 
 # Load all CSVs into a list of DataFrames
 dfs = [pd.read_csv(f, header=None, names=['Wavelength', 'Fluorescence']) for f in file_paths]
@@ -36,7 +46,7 @@ AnalyteFalse_std = AnalyteFalse_fluo.std(axis=0)
 AnalyteTrue_mean = AnalyteTrue_fluo.mean(axis=0)
 AnalyteTrue_std = AnalyteTrue_fluo.std(axis=0)
 
-# Compute area under the mean fluorescence curves (integrals)
+# Compute areas under the mean fluorescence curves
 AnalyteTrue_integral = np.trapezoid(AnalyteTrue_mean, wavelengths)
 AnalyteFalse_integral = np.trapezoid(AnalyteFalse_mean, wavelengths)
 
@@ -67,3 +77,8 @@ plt.title('Fluorescence Spectra')
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+# save plot in file
+figure_name = "Name of plot" 
+figure_path = os.path.join(folder_path, figure_name)
+plt.savefig(figure_path)
